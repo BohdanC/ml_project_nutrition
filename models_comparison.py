@@ -35,25 +35,36 @@ from sklearn.metrics import r2_score
 
 models = [LinearRegression(), XGBRegressor(), Lasso(), RandomForestRegressor(), Ridge()]
 
+
+x = np.arange(0,3000)
 for model in models:
     model.fit(X_train, Y_train)
     model_name = str(model).split('(')[0]
 
-    # print(f'{model_name} : ')
+    print(f'{model_name} : ')
 
     train_preds = model.predict(X_train)
-    # print('Training Error (MAE): ', mae(Y_train, train_preds))
-    # print('Training Error (MSE): ', mse(Y_train, train_preds))
-    # print('Training Error (RMSE): ', mse(Y_train, train_preds, squared=False))
-    # print('Training R-squared: ', r2_score(Y_train, train_preds))
+    print('Training Error (MAE): ', mae(Y_train, train_preds))
+    print('Training Error (MSE): ', mse(Y_train, train_preds))
+    print('Training Error (RMSE): ', mse(Y_train, train_preds, squared=False))
+    print('Training R-squared: ', r2_score(Y_train, train_preds))
 
     val_preds = model.predict(X_val)
-    # print('Validation Error (MAE): ', mae(Y_val, val_preds))
-    # print('Validation Error (MSE): ', mse(Y_val, val_preds))
-    # print('Validation Error (RMSE): ', mse(Y_val, val_preds, squared=False))
-    # print('Validation R-squared: ', r2_score(Y_val, val_preds))
-    #
-    # print()
+    print('Validation Error (MAE): ', mae(Y_val, val_preds))
+    print('Validation Error (MSE): ', mse(Y_val, val_preds))
+    print('Validation Error (RMSE): ', mse(Y_val, val_preds, squared=False))
+    print('Validation R-squared: ', r2_score(Y_val, val_preds))
+
+    plt.plot(x[0:10], Y_val[0:10], label=f'Real value')
+    plt.plot(x[0:10], val_preds[0:10], label=f'Predicted value')
+    plt.title(f'Accuracy in model:{model_name}')
+    plt.xlabel('Type of person')
+    plt.ylabel('Calories burned')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    print()
 
 xgb_model = models[1]
 import numpy as np
@@ -68,5 +79,5 @@ data2 = np.array(data2).reshape(1, -1)
 # Передбачення за допомогою моделі
 predicted_calories1 = xgb_model.predict(data1)
 predicted_calories2 = xgb_model.predict(data2)
-# print("Прогнозована кількість спалених калорій:", predicted_calories1[0])
-# print("Прогнозована кількість спалених калорій:", predicted_calories2[0])
+print("Прогнозована кількість спалених калорій:", predicted_calories1[0])
+print("Прогнозована кількість спалених калорій:", predicted_calories2[0])
