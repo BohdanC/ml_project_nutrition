@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+from tkinter import filedialog
+import requests
 import numpy as np
 from autocomplete_entry import AutocompleteEntry  # Import the custom autocomplete entry class
 import csv
@@ -21,6 +23,44 @@ with open(csv_file_path, mode='r', encoding='utf-8') as csvfile:
     csv_reader = csv.DictReader(csvfile)
     for row in csv_reader:
         food_calories[row['FoodItem'].strip().lower()] = float(str(row['Cals_per100grams'].split(' cal')[0]))
+
+
+def select_image_and_detect_food():
+    # Open a file dialog to select the image
+    img_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.png;*.jpg;*.jpeg")])
+
+    if img_path:  # Proceed only if a file is selected
+        api_user_token = '2710ac37c1819349968b4936d26201cc149ecfa1'
+        headers = {'Authorization': 'Bearer ' + api_user_token}
+
+        # Food Type Detection
+        api_url = 'https://api.logmeal.es/v2'
+        endpoint = '/image/recognition/dish'
+
+        try:
+            response = requests.post(api_url + endpoint,
+                                     files={'image': open(img_path, 'rb')},
+                                     headers=headers)
+
+            response.raise_for_status()  # Raise an exception for HTTP errors
+            resp = response.json()
+
+            # Loop through food_types and print the name with highest probability
+            max_prob = 0
+            max_name = ''
+            for food in resp['recognition_results']:
+                if food['prob'] > max_prob:
+                    max_prob = food['prob']
+                    max_name = food['name'].lower()
+            print(max_name)
+
+            # Set the name of the food in the Entry widget
+            food_name_entry.delete(0, tk.END)
+            food_name_entry.insert(0, max_name)
+
+        except requests.exceptions.RequestException as e:
+            messagebox.showerror("Error", f"An error occurred: {e}")
+
 
 
 def summarize_and_reset_day():
@@ -171,6 +211,11 @@ food_name_label = ttk.Label(tabFood, text="Name of Food:")
 food_name_label.grid(column=0, row=0, sticky=tk.W, padx=10, pady=5)
 food_name_entry = AutocompleteEntry(list(food_calories.keys()), tabFood)
 food_name_entry.grid(column=1, row=0, sticky=tk.EW, padx=10, pady=5)
+
+
+# Button to select an image and detect food
+take_image_button = ttk.Button(tabFood, text="Take Image", command=select_image_and_detect_food)
+take_image_button.grid(column=0, row=4, columnspan=2, pady=10)
 
 # Quantity input field for Food tab
 quantity_label = ttk.Label(tabFood, text="Quantity of grams/ml:")
